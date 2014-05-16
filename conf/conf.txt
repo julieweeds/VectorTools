@@ -1,0 +1,4 @@
+--datadir
+data
+--input
+test.txt

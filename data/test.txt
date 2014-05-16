@@ -1,0 +1,4 @@
+house,paint,3,sell,10,buy,9
+man,like,10
+gruffalo
+queen,rule,11.2,reigns,5.5
