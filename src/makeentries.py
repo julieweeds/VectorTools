@@ -39,7 +39,8 @@ class entryMaker(vectorReader):
 
 if __name__=='__main__':
 
-    configfile=os.path.join('conf',sys.argv[1])
+    #configfile=os.path.join('conf',sys.argv[1])
+    configfile=sys.argv[1]
     #print configfile
     parameters=ConfigParser.RawConfigParser()
     parameters.read(configfile)
