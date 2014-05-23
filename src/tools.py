@@ -1,6 +1,7 @@
 __author__ = 'juliewe'
 
 import sys
+from featuretotals import Totals
 
 def remove_end_tabs(filename):
 
@@ -13,8 +14,12 @@ def remove_end_tabs(filename):
                 for field in fields[1:]:
                     outstream.write('\t'+field)
                 outstream.write('\n')
-                
 
+
+def make_ppmi(filename):
+    #convert vector file from frequencies into PPMI
+    mytotals=Totals()
+    mytotals.readfile(filename)
 
 if __name__=='__main__':
 
@@ -23,3 +28,6 @@ if __name__=='__main__':
 
     if option == 'remove_end_tabs':
         remove_end_tabs(filename)
+
+    elif option == 'make_ppmi':
+        make_ppmi(filename)
