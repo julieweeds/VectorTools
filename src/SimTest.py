@@ -21,7 +21,7 @@ class Vector:
             self.total+=sc
 
 class simEngine:
-    def __init__(self,configfile)
+    def __init__(self,configfile):
         self.parameters = ConfigParser.RawConfigParser()
         self.parameters.read(configfile)
         self.datadir=self.parameters.get('A','datadir')
@@ -74,7 +74,7 @@ class simEngine:
                 read+=1
                 if read>=n:break
             print "Read first "+str(n)+" vectors"
-            
+
 
     def allpairssims(self):
 
