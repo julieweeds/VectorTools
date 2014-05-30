@@ -32,7 +32,7 @@ class simEngine:
 
 
     def readfeaturefile(self):
-        featurefile= os.path.join(self.datadir,self.prefix+self.paramaters.get('A','featurefile'))
+        featurefile= os.path.join(self.datadir,self.prefix+self.parameters.get('A','featurefile'))
         print "Reading ",featurefile
         read=0
         with open(featurefile) as instream:
