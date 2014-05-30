@@ -40,7 +40,7 @@ class simEngine:
                 parts=line.rstrip().split('\t')
                 if len(parts)==2:
                     self.featuredict[parts[0]]=float(parts[1])
-                    self.grandtotal+=parts[1]
+                    self.grandtotal+=float(parts[1])
                 else:
                     print "Ignoring line "+line
                 read+=1
