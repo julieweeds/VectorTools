@@ -1,5 +1,5 @@
 __author__ = 'juliewe'
-import ConfigParser, sys, os,datetime,time
+import ConfigParser, sys, os,datetime,time,math
 
 class Vector:
 
@@ -7,7 +7,9 @@ class Vector:
         self.name=name
         self.features={}
         self.total=0
-
+        self.transformed=False
+        self.pmifeats={}
+        self.sims={}
 
     def addfeatures(self,fields):
 
@@ -19,6 +21,43 @@ class Vector:
                 print "Warning: adding repeated values for "+feat+" : "+str(current)+" : "+str(sc)
             self.features[feat]=current+sc
             self.total+=sc
+
+    def transform_ppmi(self,featuredict,grandtotal):
+        self.pmifeats={}
+
+        for feature in self.features.keys():
+            myscore=self.features[feature]
+            marg=featuredict.get(feature,0)
+            num=myscore*grandtotal
+            den=self.total*marg
+            if den>0:
+                ratio=num/den
+            else:
+                ratio = 1
+            logvalue=math.log(ratio)
+            if logvalue>0:
+                self.pmifeats[feature]=logvalue
+            self.transformed=True
+
+    def calcLin(self,aVector):
+
+        num=0
+        den=0
+        for feature in self.pmifeats.keys():
+            myscore=self.pmifeats[feature]
+            ascore= aVector.pmifeats.get(feature,0)
+            if ascore>0:
+                num+=ascore+myscore
+            den+=myscore
+        for feature in aVector.pmifeats.keys():
+            den+=aVector.pmifeats[feature]
+        if den>0:
+            sim=num/den
+        else:
+            sim=0
+        self.sims[aVector.name]=sim
+        return sim
+
 
 class simEngine:
     def __init__(self,configfile):
@@ -44,7 +83,7 @@ class simEngine:
                 else:
                     print "Ignoring line "+line
                 read+=1
-                if read%10000==0:
+                if read%100000==0:
                     print "Read "+str(read)+" lines"
 
         print "Grandtotal for features is "+str(self.grandtotal)
@@ -71,13 +110,26 @@ class simEngine:
                 fields=line.rstrip().split('\t')
                 self.vectordict[fields[0]]=Vector(fields[0])
                 self.vectordict[fields[0]].addfeatures(fields[1:])
+
                 read+=1
                 if read>=n:break
             print "Read first "+str(n)+" vectors"
 
 
+    def transformall(self):
+
+        print "Transforming values to PPMI..."
+        for vector in self.vectordict.values():
+
+            vector.transform_ppmi(self.featuredict,self.grandtotal)
+        print "Finished transforming values to PPMI"
+
     def allpairssims(self):
 
+        for avector in self.vectordict.values():
+            for bvector in self.vectordict.values():
+                sim=avector.calcLin(bvector)
+                print avector.name,bvector.name,str(sim)
         return
 
     def knn(self):
@@ -88,6 +140,7 @@ class simEngine:
 
         self.readfeaturefile()
         self.readvectors()
+        self.transformall()
         self.allpairssims()
         self.knn()
 
