@@ -102,7 +102,7 @@ class Vector:
 
     def cosine(self,aVector):
         num=self.dotproduct(aVector)
-        den=self.compute_length()*aVector.computeLength()
+        den=self.compute_length()*aVector.compute_length()
         if den >0:
             return num/den
         else:
