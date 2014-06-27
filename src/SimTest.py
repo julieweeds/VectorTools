@@ -1,5 +1,5 @@
 __author__ = 'juliewe'
-import ConfigParser, sys, os,datetime,time,math,random
+import ConfigParser, sys, os,datetime,time,math,random,ast
 
 class Vector:
 
@@ -133,11 +133,31 @@ class simEngine:
         which = self.parameters.get('A','which')
         if which == 'n':
             self.readnvectors()
+        elif which == 'list':
+            self.readlistvectors()
         else:
             print "Aborting: method not defined for which = "+which
             exit()
 
         return
+
+    def readlistvectors(self):
+        vectorfile=os.path.join(self.datadir,self.prefix+self.parameters.get('A','eventfile'))
+        inlist=ast.literal_eval(self.parameters.get('A','list'))
+        tofind=len(inlist)
+        print "Reading ",vectorfile
+        read=0
+        with open(vectorfile) as instream:
+            for line in instream:
+                fields=line.rstrip().split('\t')
+                if fields[0] in inlist:
+                    self.vectordict[fields[0]]=Vector(fields[0])
+                    self.vectordict[fields[0]].addfeatures(fields[1:])
+                    tofind-=1
+                read+=1
+                if tofind==0:break
+            print "Read first "+str(read)+" vectors"
+
 
     def readnvectors(self):
 
