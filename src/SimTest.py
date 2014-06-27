@@ -105,7 +105,7 @@ class simEngine:
         self.featuredict={}
         self.vectordict={}
         self.grandtotal=0
-        self.featurefilter=self.parameters.get('A','featurefilter')
+        self.featurefilter=int(self.parameters.get('A','featurefilter'))
 
     def readfeaturefile(self):
         featurefile= os.path.join(self.datadir,self.prefix+self.parameters.get('A','featurefile'))
