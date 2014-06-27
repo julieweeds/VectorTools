@@ -84,7 +84,7 @@ class Vector:
 
         total=0.0
         for feature in self.features.keys():
-            ascore=aVector.features.get(feature)
+            ascore=aVector.features.get(feature,0)
             total+=self.features[feature]*ascore
         return total
 
