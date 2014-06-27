@@ -1,5 +1,5 @@
 __author__ = 'juliewe'
-import ConfigParser, sys, os,datetime,time,math
+import ConfigParser, sys, os,datetime,time,math,random
 
 class Vector:
 
@@ -91,7 +91,9 @@ class Vector:
     def dotproduct(self,aVector):
 
         total=0.0
-        for feature in self.pmifeats.keys():
+        featurelist=self.pmifeats.keys()
+        random.shuffle(featurelist)
+        for feature in featurelist:
             ascore=aVector.pmifeats.get(feature,0)
             total+=self.pmifeats[feature]*ascore
         return total
