@@ -22,22 +22,30 @@ class Vector:
             self.features[feat]=current+sc
             self.total+=sc
 
-    def transform_ppmi(self,featuredict,grandtotal):
+    def transform_ppmi(self,featuredict,grandtotal,input='raw'):
+
         self.pmifeats={}
 
-        for feature in self.features.keys():
-            myscore=self.features[feature]
-            marg=featuredict.get(feature,0)
-            num=myscore*grandtotal
-            den=self.total*marg
-            if den>0:
-                ratio=num/den
-            else:
-                ratio = 1
-            logvalue=math.log(ratio)
-            if logvalue>0:
-                self.pmifeats[feature]=logvalue
-            self.transformed=True
+        if input=='raw':
+            for feature in self.features.keys():
+                myscore=self.features[feature]
+                marg=featuredict.get(feature,0)
+                num=myscore*grandtotal
+                den=self.total*marg
+                if den>0:
+                    ratio=num/den
+                else:
+                    ratio = 1
+                logvalue=math.log(ratio)
+                if logvalue>0:
+                    self.pmifeats[feature]=logvalue
+
+        else:
+            for feature in self.features.keys():
+                if featuredict.get(feature,0)>0:
+                    self.pmifeats[feature]=self.features[feature]
+
+        self.transformed=True
 
     def calcsim(self,aVector,metric='cosine'):
 
@@ -83,9 +91,9 @@ class Vector:
     def dotproduct(self,aVector):
 
         total=0.0
-        for feature in self.features.keys():
-            ascore=aVector.features.get(feature,0)
-            total+=self.features[feature]*ascore
+        for feature in self.pmifeats.keys():
+            ascore=aVector.pmifeats.get(feature,0)
+            total+=self.pmifeats[feature]*ascore
         return total
 
 class simEngine:
@@ -97,7 +105,7 @@ class simEngine:
         self.featuredict={}
         self.vectordict={}
         self.grandtotal=0
-
+        self.featurefilter=self.parameters.get('A','featurefilter')
 
     def readfeaturefile(self):
         featurefile= os.path.join(self.datadir,self.prefix+self.parameters.get('A','featurefile'))
@@ -107,8 +115,9 @@ class simEngine:
             for line in instream:
                 parts=line.rstrip().split('\t')
                 if len(parts)==2:
-                    self.featuredict[parts[0]]=float(parts[1])
-                    self.grandtotal+=float(parts[1])
+                    if float(parts[1])>self.featurefilter:
+                        self.featuredict[parts[0]]=float(parts[1])
+                        self.grandtotal+=float(parts[1])
                 else:
                     print "Ignoring line "+line
                 read+=1
@@ -150,7 +159,7 @@ class simEngine:
         print "Transforming values to PPMI..."
         for vector in self.vectordict.values():
 
-            vector.transform_ppmi(self.featuredict,self.grandtotal)
+            vector.transform_ppmi(self.featuredict,self.grandtotal,self.parameters.get('A','input'))
         print "Finished transforming values to PPMI"
 
     def allpairssims(self):
@@ -169,8 +178,8 @@ class simEngine:
 
         self.readfeaturefile()
         self.readvectors()
-        if self.parameters.get('A','input')=='raw' and self.parameters.get('A','metric')=='lin':
-            self.transformall()
+        #if self.parameters.get('A','input')=='raw' and self.parameters.get('A','metric')=='lin':
+        self.transformall()
         self.allpairssims()
         self.knn()
 
