@@ -10,6 +10,8 @@ class Vector:
         self.transformed=False
         self.pmifeats={}
         self.sims={}
+        self.length=0
+        self.computedlength=False
 
     def addfeatures(self,fields):
 
@@ -21,6 +23,17 @@ class Vector:
                 print "Warning: adding repeated values for "+feat+" : "+str(current)+" : "+str(sc)
             self.features[feat]=current+sc
             self.total+=sc
+
+    def compute_length(self):
+
+        if not self.computedlength:
+            prod=self.dotproduct(self)
+            if prod>0:
+                self.length=math.pow(prod,0.5)
+            else:
+                self.length=0
+            self.computedlength=True
+        return self.length
 
     def transform_ppmi(self,featuredict,grandtotal,input='raw'):
 
@@ -46,6 +59,17 @@ class Vector:
                     self.pmifeats[feature]=self.features[feature]
 
         self.transformed=True
+
+    def make_unit_vectors(self):
+
+        self.compute_length()
+        if self.length>0:
+            self.computedlength=False
+            for feature in self.pmifeats.keys():
+                score=self.pmifeats[feature]
+                newscore=score/self.length
+                self.pmifeats[feature]=newscore
+
 
     def calcsim(self,aVector,metric='cosine'):
 
@@ -78,15 +102,13 @@ class Vector:
 
     def cosine(self,aVector):
         num=self.dotproduct(aVector)
-        prod=self.dotproduct(self)*aVector.dotproduct(aVector)
-        if prod>0:
-            den=math.pow(prod,0.5)
-        else:
-            return 0
+        den=self.compute_length()*aVector.computeLength()
         if den >0:
             return num/den
         else:
             return 0
+
+
 
     def dotproduct(self,aVector):
 
@@ -182,6 +204,7 @@ class simEngine:
         for vector in self.vectordict.values():
 
             vector.transform_ppmi(self.featuredict,self.grandtotal,self.parameters.get('A','input'))
+            vector.make_unit_vectors()
         print "Finished transforming values to PPMI"
 
     def allpairssims(self):
