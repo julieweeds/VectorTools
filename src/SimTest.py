@@ -39,6 +39,16 @@ class Vector:
                 self.pmifeats[feature]=logvalue
             self.transformed=True
 
+    def calcsim(self,aVector,metric='cosine'):
+
+        if metric=='lin':
+            return self.calcLin(aVector)
+        elif metric=='cosine':
+            return self.cosine(aVector)
+        else:
+            print "Unknown similarity metric", metric
+            exit(1)
+
     def calcLin(self,aVector):
 
         num=0
@@ -58,6 +68,25 @@ class Vector:
         self.sims[aVector.name]=sim
         return sim
 
+    def cosine(self,aVector):
+        num=self.dotproduct(aVector)
+        prod=self.dotproduct(self)*aVector.dotproduct(aVector)
+        if prod>0:
+            den=math.pow(prod,0.5)
+        else:
+            return 0
+        if den >0:
+            return num/den
+        else:
+            return 0
+
+    def dotproduct(self,aVector):
+
+        total=0.0
+        for feature in self.features.keys():
+            ascore=aVector.features.get(feature)
+            total+=self.features[feature]*ascore
+        return total
 
 class simEngine:
     def __init__(self,configfile):
@@ -128,7 +157,7 @@ class simEngine:
 
         for avector in self.vectordict.values():
             for bvector in self.vectordict.values():
-                sim=avector.calcLin(bvector)
+                sim=avector.calcsim(bvector,metric=self.parameters.get('A','metric'))
                 print avector.name,bvector.name,str(sim)
         return
 
@@ -140,7 +169,8 @@ class simEngine:
 
         self.readfeaturefile()
         self.readvectors()
-        self.transformall()
+        if self.parameters.get('A','input')=='raw' and self.parameters.get('A','metric')=='lin':
+            self.transformall()
         self.allpairssims()
         self.knn()
 
